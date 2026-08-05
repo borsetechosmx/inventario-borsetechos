@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventario Borse Techos Mx</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15171A; --surface:#1D2024; --surface-2:#24272C;
+    --border:#33373D; --border-soft:#2A2D32; --text:#EDEBE4;
+    --muted:#8B8E92; --muted-2:#616469;
+    --amber:#E8A33D; --amber-dim:#4A3A1E;
+    --red:#DB5A52; --red-dim:#3E2321;
+    --green:#59A97C; --green-dim:#20332A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;}
+  .display{font-family:'Bebas Neue',sans-serif; letter-spacing:0.04em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  #app{max-width:980px; margin:0 auto; padding:28px 24px 80px;}
+
+  .topbar{display:flex; align-items:flex-end; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:20px;}
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand h1{font-size:30px; margin:0; line-height:1;}
+  .brand span.tag{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; border:1px solid var(--border); padding:3px 7px; border-radius:3px;}
+  .clock{font-size:11px; color:var(--muted-2); text-align:right;}
+  .clock .dot{display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--green); margin-right:5px; box-shadow:0 0 0 3px var(--green-dim);}
+
+  .tabs{display:flex; gap:2px; margin-bottom:22px; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:3px; width:fit-content;}
+  .tab-btn{background:none; border:none; color:var(--muted); font-family:inherit; font-size:13px; font-weight:500; padding:8px 18px; border-radius:4px; cursor:pointer;}
+  .tab-btn.active{background:var(--surface-2); color:var(--amber);}
+  .tab-btn:hover:not(.active){color:var(--text);}
+  .tab-btn .badge{display:inline-block; margin-left:6px; background:var(--red-dim); color:var(--red); font-size:10px; font-weight:700; padding:1px 6px; border-radius:8px;}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .row{display:flex; gap:10px; flex-wrap:wrap;}
+  .field{display:flex; flex-direction:column; gap:4px;}
+  .field label{font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted-2);}
+  input, select{background:var(--surface-2); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:13px; padding:8px 10px; border-radius:5px; outline:none;}
+  input:focus, select:focus{border-color:var(--amber);}
+  input::placeholder{color:var(--muted-2);}
+  input[type=date]{color-scheme:dark;}
+
+  .btn{background:var(--amber); color:#1A1200; border:none; font-family:inherit; font-weight:600; font-size:13px; padding:9px 16px; border-radius:5px; cursor:pointer;}
+  .btn:hover{opacity:0.88;}
+  .btn.secondary{background:var(--surface-2); color:var(--text); border:1px solid var(--border);}
+  .btn.danger{background:var(--red-dim); color:var(--red); border:1px solid #5A2E2A;}
+  .btn.small{padding:5px 10px; font-size:11px;}
+  .btn:disabled{opacity:0.35; cursor:not-allowed;}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 18px; margin-bottom:14px;}
+  .card-title{font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin:0 0 12px;}
+  .hint{font-size:11px; color:var(--muted-2); margin-top:8px;}
+
+  .item-row{border-bottom:1px solid var(--border-soft); padding:14px 0;}
+  .item-row:last-child{border-bottom:none;}
+  .item-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+  .item-name{font-size:15px; font-weight:600;}
+  .item-cat{font-size:11px; color:var(--muted-2); margin-left:8px; text-transform:uppercase; letter-spacing:0.06em;}
+  .item-nums{font-size:12px; color:var(--muted); display:flex; gap:14px; flex-wrap:wrap;}
+  .item-nums b{color:var(--text); font-weight:600;}
+  .stockbar{height:8px; border-radius:4px; background:var(--surface-2); overflow:hidden; display:flex;}
+  .stockbar .seg-alloc{background:var(--amber);}
+  .stockbar .seg-avail{background:var(--green);}
+  .stockbar.three-way .seg-mty{background:#5B8FD9;}
+  .stockbar.three-way .seg-cdmx{background:#59A97C;}
+  .stockbar.three-way .seg-out{background:var(--amber);}
+  .dot-mty,.dot-cdmx,.dot-out{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px;}
+  .dot-mty{background:#5B8FD9;} .dot-cdmx{background:#59A97C;} .dot-out{background:var(--amber);}
+  .recon-ok{color:var(--green); font-weight:500;}
+  .recon-bad{color:var(--red); font-weight:500;}
+  .low-flag{color:var(--red); font-size:11px; margin-top:6px; font-weight:500;}
+  .next-out{color:var(--amber); font-size:11px; margin-top:6px;}
+  .next-out .more-out{color:var(--muted-2);}
+  .empty{color:var(--muted-2); font-size:13px; padding:20px 0; text-align:center;}
+
+  .proj-card{background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:12px; overflow:hidden;}
+  .proj-card.at-risk{border-color:#5A2E2A;}
+  .proj-head{display:flex; justify-content:space-between; align-items:center; padding:14px 18px; cursor:pointer;}
+  .proj-head:hover{background:var(--surface-2);}
+  .proj-name{font-size:16px; font-weight:600;}
+  .status-pill{font-size:10px; text-transform:uppercase; letter-spacing:0.08em; padding:3px 8px; border-radius:3px; font-weight:600;}
+  .status-active{background:var(--green-dim); color:var(--green);}
+  .status-done{background:var(--surface-2); color:var(--muted); border:1px solid var(--border);}
+  .status-risk{background:var(--red-dim); color:var(--red);}
+  .proj-meta{font-size:11px; color:var(--muted-2); margin-top:3px;}
+  .proj-body{padding:0 18px 16px; border-top:1px solid var(--border-soft); display:none;}
+  .proj-body.open{display:block;}
+  .alloc-line{display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-soft); font-size:13px;}
+  .alloc-line:last-child{border-bottom:none;}
+  .add-alloc{display:flex; gap:8px; align-items:flex-end; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border);}
+  .details-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
+  .truck-info{font-size:12px; margin-top:10px; padding:8px 10px; border-radius:5px; display:flex; align-items:center; gap:8px;}
+  .truck-ok{background:var(--green-dim); color:var(--green);}
+  .truck-soon{background:var(--amber-dim); color:var(--amber);}
+  .truck-late{background:var(--red-dim); color:var(--red);}
+
+  .conflict-row{border:1px solid #5A2E2A; background:var(--red-dim); border-radius:6px; padding:10px 14px; margin-bottom:10px; font-size:13px;}
+  .conflict-row b{color:var(--red);}
+  .conflict-row .proj-tags{font-size:11px; color:var(--muted); margin-top:4px;}
+
+  .need-name{font-weight:500;}
+  .need-qty{color:var(--muted-2); font-size:11px; margin-left:6px;}
+  .status-tag{font-size:11px; font-weight:600; padding:3px 8px; border-radius:3px; white-space:nowrap;}
+  .status-covered{background:var(--green-dim); color:var(--green);}
+  .status-ready{background:var(--surface-2); color:var(--muted); border:1px solid var(--border);}
+  .status-short{background:var(--red-dim); color:var(--red);}
+  .status-missing{background:var(--surface-2); color:var(--muted-2); border:1px dashed var(--border);}
+  .sub-label{font-size:11px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.08em; margin:14px 0 6px;}
+  input[type=file]{color:var(--muted); font-size:12px; padding:6px;}
+
+  h2.section{font-size:13px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin:26px 0 12px; display:flex; align-items:center; gap:10px;}
+  h2.section::after{content:''; flex:1; height:1px; background:var(--border);}
+
+  #lock-screen{position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:100;}
+  .lock-box{width:280px; text-align:center;}
+  .lock-box h1{font-size:26px; margin:0 0 4px;}
+  .lock-box .tag{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; display:block; margin-bottom:22px;}
+  .lock-box input{width:100%; text-align:center; margin-bottom:10px; letter-spacing:0.08em;}
+  .lock-box .btn{width:100%;}
+  .lock-error{color:var(--red); font-size:12px; margin-top:10px; min-height:14px;}
+  #app{display:none;}
+</style>
+</head>
+<body>
+
+<div id="lock-screen">
+  <div class="lock-box">
+    <h1 class="display">Inventario Borse Techos Mx</h1>
+    <span class="tag">Restricted access</span>
+    <input type="password" id="lock-password" placeholder="Password" autofocus>
+    <button class="btn" id="lock-btn">Enter</button>
+    <div class="lock-error" id="lock-error"></div>
+  </div>
+</div>
+
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <h1 class="display">Inventario Borse Techos Mx</h1>
+      <span class="tag">Monterrey</span>
+    </div>
+    <div class="clock"><span class="dot"></span><span id="statusline">Loading…</span></div>
+  </div>
+
+  <datalist id="item-names-list"></datalist>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="inventory">Inventory</button>
+    <button class="tab-btn" data-tab="projects">Projects</button>
+    <button class="tab-btn" data-tab="forecast">Forecast <span class="badge" id="conflict-badge" style="display:none;">0</span></button>
+  </div>
+
+  <div class="panel active" id="panel-inventory">
+    <div class="card">
+      <p class="card-title">Add item to stock</p>
+      <div class="row">
+        <div class="field" style="flex:2; min-width:160px;"><label>Item name</label><input id="in-name" placeholder="e.g. Truss segment 2m"></div>
+        <div class="field" style="flex:1; min-width:120px;"><label>Category</label><input id="in-cat" placeholder="e.g. Rigging"></div>
+        <div class="field" style="width:100px;"><label>Monterrey qty</label><input id="in-qty-mty" type="number" min="0" step="1" placeholder="0"></div>
+        <div class="field" style="width:100px;"><label>CDMX qty</label><input id="in-qty-cdmx" type="number" min="0" step="1" placeholder="0"></div>
+        <div class="field" style="width:100px;"><label>Global qty</label><input id="in-qty-global" type="number" min="0" step="1" placeholder="0"></div>
+        <div class="field" style="width:90px;"><label>Unit</label><input id="in-unit" placeholder="pcs"></div>
+        <div class="field"><label>&nbsp;</label><button class="btn" id="btn-add-item">Add item</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-title">Bulk-load from a warehouse count</p>
+      <div class="row">
+        <div class="field" style="width:140px;">
+          <label>Warehouse</label>
+          <select id="inv-warehouse"><option value="Monterrey">Monterrey</option><option value="CDMX">CDMX</option><option value="Global">Global (frozen reference total)</option></select>
+        </div>
+        <div class="field" style="flex:1;">
+          <label>Upload inventory (.xlsx / .csv)</label>
+          <input type="file" id="inv-upload" accept=".xlsx,.xls,.csv" onchange="handleInventoryUpload(this)">
+        </div>
+      </div>
+      <p class="hint">Monterrey/CDMX: sets that warehouse's quantity only, leaving the other untouched. Global: sets the frozen reference total only — it will NOT change when Monterrey or CDMX are edited afterward. Matches by name; new names are added automatically. Picks up columns named "Item"/"Qty" or "Descripción"/"Inventario" automatically; otherwise uses the first two columns.</p>
+      <button class="btn secondary small" style="margin-top:10px;" onclick="loadDefaultInventory()">Load starting inventory (70 items, Monterrey)</button>
+      <button class="btn danger small" style="margin-top:10px;" onclick="resetInventory()">Reset inventory (delete all items)</button>
+    </div>
+    <h2 class="section">Live stock — today</h2>
+    <div class="tabs" style="margin-bottom:14px;">
+      <button class="tab-btn inv-subtab active" data-subtab="global">Global</button>
+      <button class="tab-btn inv-subtab" data-subtab="mty">Monterrey</button>
+      <button class="tab-btn inv-subtab" data-subtab="cdmx">CDMX</button>
+      <button class="tab-btn inv-subtab" data-subtab="event">Out at events</button>
+    </div>
+    <div class="card inv-subpanel active" id="items-list-global"><p class="empty">No items yet — add your first one above.</p></div>
+    <div class="card inv-subpanel" id="items-list-mty" style="display:none;"><p class="empty">No items yet.</p></div>
+    <div class="card inv-subpanel" id="items-list-cdmx" style="display:none;"><p class="empty">No items yet.</p></div>
+    <div class="card inv-subpanel" id="items-list-event" style="display:none;"><p class="empty">Nothing out right now.</p></div>
+  </div>
+
+  <div class="panel" id="panel-projects">
+    <div class="card">
+      <p class="card-title">Start a project</p>
+      <div class="row">
+        <div class="field" style="flex:1; min-width:180px;"><label>Project name</label><input id="proj-name" placeholder="e.g. Festival X — Main Stage"></div>
+        <div class="field" style="flex:1; min-width:160px;"><label>Location</label><input id="proj-location" placeholder="e.g. Guadalajara"></div>
+        <div class="field"><label>Load-in</label><input id="proj-start" type="date"></div>
+        <div class="field"><label>Load-out</label><input id="proj-end" type="date"></div>
+        <div class="field" style="width:110px;"><label>Distance (km)</label><input id="proj-distance" type="number" min="0" placeholder="optional"></div>
+        <div class="field"><label>&nbsp;</label><button class="btn" id="btn-add-project">Create project</button></div>
+      </div>
+      <p class="hint">Distance is from the Monterrey warehouse — used to estimate when a truck needs to leave.</p>
+    </div>
+    <h2 class="section">Active projects</h2>
+    <div id="projects-active"><p class="empty">No active projects.</p></div>
+    <h2 class="section">Completed</h2>
+    <div id="projects-done"><p class="empty">None yet.</p></div>
+  </div>
+
+  <div class="panel" id="panel-forecast">
+    <div class="card">
+      <p class="card-title">Team notifications</p>
+      <div class="row">
+        <div class="field" style="flex:1;"><label>Name</label><input id="team-name" placeholder="e.g. Enrique"></div>
+        <div class="field" style="flex:1;"><label>Email</label><input id="team-email" type="email" placeholder="name@borsetechos.com"></div>
+        <div class="field"><label>&nbsp;</label><button class="btn small" onclick="addTeamMember()">Add</button></div>
+      </div>
+      <div id="team-list" style="margin-top:10px;"></div>
+      <p class="hint">When a shortage shows up below, "Notify team" opens an email draft addressed to everyone here — you review and hit send.</p>
+    </div>
+    <h2 class="section" style="margin-top:0;">Overbooking conflicts</h2>
+    <div id="conflicts-list"><p class="empty">No conflicts detected.</p></div>
+    <h2 class="section">Upcoming demand by item</h2>
+    <div class="card" id="forecast-list"><p class="empty">Assign items with dates to see them here.</p></div>
+    <p class="hint">Assumes 600 km/day on the road plus a 1-day load buffer — adjust your own judgment for weather, borders, or convoy size.</p>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC0d_J1dhnTJUFSaqvIWhNM5nh6Z-rU1EU",
+  authDomain: "borse-techos-inventario.firebaseapp.com",
+  projectId: "borse-techos-inventario",
+  storageBucket: "borse-techos-inventario.firebasestorage.app",
+  messagingSenderId: "655999645312",
+  appId: "1:655999645312:web:e38f65640f8e21b9969865"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const STATE_DOC = db.collection('inventory').doc('state');
+let unsubscribeSync = null;
+let applyingRemoteUpdate = false;
+
+let items = [];
+let projects = [];
+let team = [];
+let openProjectIds = new Set();
+const TRUCK_KM_PER_DAY = 600;
+const LOAD_BUFFER_DAYS = 1;
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function toDate(s){ return new Date(s+'T00:00:00'); }
+function toISO(d){ return d.toISOString().slice(0,10); }
+function todayISO(){ return toISO(new Date()); }
+function nextDay(s){ const d=toDate(s); d.setDate(d.getDate()+1); return toISO(d); }
+function fmtDate(s){ if(!s) return '—'; return toDate(s).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+const DEFAULT_ITEMS = [{"id": null, "name": "BASE REGULABLE 0,60M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 638, "CDMX": 0}, "globalTotal": 638}, {"id": null, "name": "BASE REGULABLE 0,40M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 10, "CDMX": 0}, "globalTotal": 10}, {"id": null, "name": "WOOD PACK", "category": "", "unit": "pcs", "stock": {"Monterrey": 675, "CDMX": 0}, "globalTotal": 675}, {"id": null, "name": "BASE COLLARIN 0.24M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 687, "CDMX": 0}, "globalTotal": 687}, {"id": null, "name": "HORIZONTAL LW 0,39 AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "HORIZONTAL LW 0,73M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 615, "CDMX": 0}, "globalTotal": 615}, {"id": null, "name": "HORIZONTAL LW 086 AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 170, "CDMX": 0}, "globalTotal": 170}, {"id": null, "name": "HORIZONTAL LW 1.036 AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "HORIZONTAL LW 1,09M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 24, "CDMX": 0}, "globalTotal": 24}, {"id": null, "name": "HORIZONTAL LW 2,07M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 252, "CDMX": 0}, "globalTotal": 252}, {"id": null, "name": "HORIZONTAL LW 2,57M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 6149, "CDMX": 0}, "globalTotal": 6149}, {"id": null, "name": "VIGA PUENTE LW 2.07M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 14, "CDMX": 0}, "globalTotal": 14}, {"id": null, "name": "VIGA PUENTE LW 2.57M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 350, "CDMX": 0}, "globalTotal": 350}, {"id": null, "name": "VERTICAL S/E 0,50M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 15, "CDMX": 0}, "globalTotal": 15}, {"id": null, "name": "VERTICAL C/E 1,00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "VERTICAL C/E 1,50M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 19, "CDMX": 0}, "globalTotal": 19}, {"id": null, "name": "VERTICAL C/E 2,00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 86, "CDMX": 0}, "globalTotal": 86}, {"id": null, "name": "VERTICAL C/E 3,00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 1896, "CDMX": 0}, "globalTotal": 1896}, {"id": null, "name": "VERTICAL S/E 0,50M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 117, "CDMX": 0}, "globalTotal": 117}, {"id": null, "name": "VERTICAL S/E 1,00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 190, "CDMX": 0}, "globalTotal": 190}, {"id": null, "name": "VERTICAL S/E 1,50M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 317, "CDMX": 0}, "globalTotal": 317}, {"id": null, "name": "VERTICAL S/E 2,00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 165, "CDMX": 0}, "globalTotal": 165}, {"id": null, "name": "VERTICAL S/E 2,00M CON ROSETA 0.25", "category": "", "unit": "pcs", "stock": {"Monterrey": 28, "CDMX": 0}, "globalTotal": 28}, {"id": null, "name": "VERTICAL S/E 2,50M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 50, "CDMX": 0}, "globalTotal": 50}, {"id": null, "name": "VERTICAL S/E 3,00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "HORIZONTAL DIAGONAL DE  2.07X1.04 AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "HORIZONTAL-DIAGONAL 2.07M X 2.07M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "HORIZONTAL-DIAGONAL 2.57M X 2.07M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 10, "CDMX": 0}, "globalTotal": 10}, {"id": null, "name": "HORIZONTAL-DIAGONAL 2.57M X 2.57M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 91, "CDMX": 0}, "globalTotal": 91}, {"id": null, "name": "HORIZONTAL-DIAGONAL 2.57M X 0.73M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 4, "CDMX": 0}, "globalTotal": 4}, {"id": null, "name": "DIAGONAL 0,73M X 2.00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 364, "CDMX": 0}, "globalTotal": 364}, {"id": null, "name": "DIAGONAL LW 0.73M X 1.50M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 41, "CDMX": 0}, "globalTotal": 41}, {"id": null, "name": "DIAGONAL LW 0.86M X 2.00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 60, "CDMX": 0}, "globalTotal": 60}, {"id": null, "name": "DIAGONAL 1,09M X 2.00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 21, "CDMX": 0}, "globalTotal": 21}, {"id": null, "name": "DIAGONAL 2,07M X 2.00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 127, "CDMX": 0}, "globalTotal": 127}, {"id": null, "name": "DIAGONAL 2,57M X 2.00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 3622, "CDMX": 0}, "globalTotal": 3622}, {"id": null, "name": "DIAGONAL LW 2.57M X 1.00M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 80, "CDMX": 0}, "globalTotal": 80}, {"id": null, "name": "DIAGONAL LW 2,57M X 1,50M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 232, "CDMX": 0}, "globalTotal": 232}, {"id": null, "name": "VIGA CELOSIA LW 2.57M REFORZADA", "category": "", "unit": "pcs", "stock": {"Monterrey": 42, "CDMX": 0}, "globalTotal": 42}, {"id": null, "name": "VIGA CELOSIA 2.57M X 0.50M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 54, "CDMX": 0}, "globalTotal": 54}, {"id": null, "name": "VIGA CELOSIA 5.14M X 0.50M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 19, "CDMX": 0}, "globalTotal": 19}, {"id": null, "name": "VIGA CELOSIA 7.71M X 0.50M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 27, "CDMX": 0}, "globalTotal": 27}, {"id": null, "name": "VIGA CELOSIA 5.14 BORSE", "category": "", "unit": "pcs", "stock": {"Monterrey": 11, "CDMX": 0}, "globalTotal": 11}, {"id": null, "name": "PLATAFORMA DE ACERO P/TUBO T9 2.07M X 0.32M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 7, "CDMX": 0}, "globalTotal": 7}, {"id": null, "name": "PLATAFORMA DE ACERO P/TUBO T9 2.57M X 0.32M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 221, "CDMX": 0}, "globalTotal": 221}, {"id": null, "name": "TRIPLAY 1.22 X 2.57 CON MELANINA", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "VIGA ESCALERA 10 PELDAÑOS 2.57M X 2.00M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "VIGA ESCALERA 750 LW DE 8 PELDAÑOS 1.50M X 2.57M AR O", "category": "", "unit": "pcs", "stock": {"Monterrey": 4, "CDMX": 0}, "globalTotal": 4}, {"id": null, "name": "VIGA ESCALERA 750 DE 5 PELD \"O\" 1.00M X 1.57M LW AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "VIGA ALU 0.73 P/ESCEARIO EV", "category": "", "unit": "pcs", "stock": {"Monterrey": 42, "CDMX": 0}, "globalTotal": 42}, {"id": null, "name": "VIGA ALU. 2,07 P/ESCENARIO EV", "category": "", "unit": "pcs", "stock": {"Monterrey": 40, "CDMX": 0}, "globalTotal": 40}, {"id": null, "name": "VIGA ALU. 2,57 P/ESCENARIO EV", "category": "", "unit": "pcs", "stock": {"Monterrey": 343, "CDMX": 0}, "globalTotal": 343}, {"id": null, "name": "VIGA ALU. 0.86 ESCENARIO EV", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "ESPIGA DE ACERO PARA VERTICAL 0.52M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "RIGIDIZADOR VERT.0,50 C/CAB.AL", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "GRAPA ORTOGONAL 0.22MM AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "GRAPA GIRATORIA 0.22MM AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "GRAPA GIRATORIA CON CABEZA 22MM AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "DOBLE CABEZA AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "GRAPA ROSETA 6 AGUJEROS 0.12M AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "PASADOR ROJO 11MM AR", "category": "", "unit": "pcs", "stock": {"Monterrey": 560, "CDMX": 0}, "globalTotal": 560}, {"id": null, "name": "VIGAS DE ACERO DE 1.40 M", "category": "", "unit": "pcs", "stock": {"Monterrey": 11, "CDMX": 0}, "globalTotal": 11}, {"id": null, "name": "VIGAS DE ACERO DE 3.00 M", "category": "", "unit": "pcs", "stock": {"Monterrey": 67, "CDMX": 0}, "globalTotal": 67}, {"id": null, "name": "VIGAS DE ACERO DE 3.20 M", "category": "", "unit": "pcs", "stock": {"Monterrey": 1, "CDMX": 0}, "globalTotal": 1}, {"id": null, "name": "VIGAS DE ACERO DE 4.00 M", "category": "", "unit": "pcs", "stock": {"Monterrey": 5, "CDMX": 0}, "globalTotal": 5}, {"id": null, "name": "VIGA HT20 3.90M", "category": "", "unit": "pcs", "stock": {"Monterrey": 77, "CDMX": 0}, "globalTotal": 77}, {"id": null, "name": "DECK NEGRO 2.57 X 0.86 M", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "DECK AZUL 2.57 X 0.86 M", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "DECK VERDE 2.57 X 0.86 M", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}, {"id": null, "name": "DECK BLANCO 2.57 X 0.32 M", "category": "", "unit": "pcs", "stock": {"Monterrey": 0, "CDMX": 0}, "globalTotal": 0}];
+
+async function loadData(){
+  setStatus('Connecting…');
+  try{
+    await firebase.auth().signInAnonymously();
+  }catch(e){
+    setStatus('Could not connect — check your internet');
+    return;
+  }
+  if(unsubscribeSync) unsubscribeSync();
+  unsubscribeSync = STATE_DOC.onSnapshot(async (snap) => {
+    if(!snap.exists){
+      const seedItems = DEFAULT_ITEMS.map(it => ({...it, id: uid()}));
+      applyingRemoteUpdate = true;
+      items = seedItems; projects = []; team = [];
+      applyingRemoteUpdate = false;
+      render();
+      await STATE_DOC.set({items, projects, team});
+      setStatus('Synced');
+      return;
+    }
+    const data = snap.data();
+    applyingRemoteUpdate = true;
+    items = migrateItems(data.items || []);
+    projects = data.projects || [];
+    team = data.team || [];
+    applyingRemoteUpdate = false;
+    render();
+    setStatus(snap.metadata.hasPendingWrites ? 'Saving…' : 'Synced');
+  }, (err) => {
+    setStatus('Sync error — check your connection');
+  });
+}
+
+function migrateItems(arr){
+  return arr.map(it => {
+    let out = it;
+    if(!it.stock){
+      const stock = {}; WAREHOUSES.forEach(w => stock[w] = 0);
+      stock['Monterrey'] = typeof it.total === 'number' ? it.total : 0;
+      const { total, ...rest } = it;
+      out = { ...rest, stock };
+    }
+    if(typeof out.globalTotal !== 'number'){
+      out = { ...out, globalTotal: itemTotal(out) };
+    }
+    return out;
+  });
+}
+
+function loadDefaultInventory(){
+  if(items.length > 0 && !confirm('This will replace your current ' + items.length + ' item(s) with the starting inventory (70 items). Continue?')) return;
+  items = DEFAULT_ITEMS.map(it => ({...it, id: uid()}));
+  render(); saveData();
+}
+
+function resetInventory(){
+  if(!confirm('This deletes all ' + items.length + ' item(s) from your inventory permanently. Projects will keep their history but items will show as removed. Continue?')) return;
+  items = [];
+  render(); saveData();
+}
+
+async function saveData(){
+  if(applyingRemoteUpdate) return;
+  setStatus('Saving…');
+  try{ await STATE_DOC.set({items, projects, team}); setStatus('Synced'); }
+  catch(e){ setStatus('Save failed — retry'); }
+}
+
+function setStatus(text){ document.getElementById('statusline').textContent = text + ' · ' + new Date().toLocaleTimeString(); }
+
+const WAREHOUSES = ['Monterrey', 'CDMX'];
+function itemTotal(item){
+  const s = item.stock || {};
+  return WAREHOUSES.reduce((sum, w) => sum + (s[w] || 0), 0);
+}
+function globalRecorded(item){
+  return typeof item.globalTotal === 'number' ? item.globalTotal : 0;
+}
+
+function demandOnDate(itemId, iso, excludeProjectId){
+  let total = 0;
+  for(const p of projects){
+    if(p.status !== 'active' || !p.startDate || !p.endDate) continue;
+    if(p.id === excludeProjectId) continue;
+    if(p.startDate <= iso && iso <= p.endDate){
+      const a = p.allocations.find(x => x.itemId === itemId);
+      if(a) total += a.qty;
+    }
+  }
+  return total;
+}
+
+function availableToday(item){ return itemTotal(item) - demandOnDate(item.id, todayISO()); }
+function allocatedToday(item){ return demandOnDate(item.id, todayISO()); }
+
+function wouldConflict(item, project, hypotheticalQty){
+  const start = toDate(project.startDate), end = toDate(project.endDate);
+  let maxDemand = 0, worstDate = null, worstProjects = [];
+  let guard = 0;
+  for(let d = new Date(start); d <= end && guard < 400; d.setDate(d.getDate()+1), guard++){
+    const iso = toISO(d);
+    const others = demandOnDate(item.id, iso, project.id);
+    const demand = others + hypotheticalQty;
+    if(demand > maxDemand){
+      maxDemand = demand; worstDate = iso;
+      worstProjects = projects.filter(p => p.status==='active' && p.id!==project.id && p.startDate<=iso && iso<=p.endDate && p.allocations.some(a=>a.itemId===item.id)).map(p=>p.name);
+    }
+  }
+  return {maxDemand, worstDate, worstProjects};
+}
+
+function computeConflicts(){
+  const raw = [];
+  for(const item of items){
+    const allocs = [];
+    for(const p of projects){
+      if(p.status !== 'active' || !p.startDate || !p.endDate) continue;
+      const a = p.allocations.find(x => x.itemId === item.id);
+      if(a && a.qty > 0) allocs.push({name:p.name, start:p.startDate, end:p.endDate, qty:a.qty});
+    }
+    if(allocs.length === 0) continue;
+    const points = new Set();
+    for(const a of allocs){ points.add(a.start); points.add(nextDay(a.end)); }
+    const sorted = Array.from(points).sort();
+    for(let i=0;i<sorted.length-1;i++){
+      const segStart = sorted[i], segEndExcl = sorted[i+1];
+      const covering = allocs.filter(a => a.start <= segStart && nextDay(a.end) >= segEndExcl);
+      const sum = covering.reduce((s,a)=>s+a.qty,0);
+      if(sum > itemTotal(item)){
+        const d = toDate(segEndExcl); d.setDate(d.getDate()-1);
+        raw.push({itemId:item.id, itemName:item.name, start:segStart, end:toISO(d), over:sum-itemTotal(item), projects:covering.map(c=>c.name)});
+      }
+    }
+  }
+  raw.sort((a,b)=> a.itemId===b.itemId ? a.start.localeCompare(b.start) : a.itemName.localeCompare(b.itemName));
+  const merged = [];
+  for(const c of raw){
+    const key = c.projects.slice().sort().join('|');
+    const last = merged[merged.length-1];
+    if(last && last.itemId===c.itemId && last._key===key && nextDay(last.end)===c.start && last.over===c.over){
+      last.end = c.end;
+    } else {
+      merged.push({...c, _key:key});
+    }
+  }
+  return merged;
+}
+
+function truckingInfo(project){
+  if(!project.distanceKm || !project.startDate) return null;
+  const travelDays = Math.ceil(project.distanceKm / TRUCK_KM_PER_DAY);
+  const start = toDate(project.startDate);
+  const dispatch = new Date(start);
+  dispatch.setDate(dispatch.getDate() - travelDays - LOAD_BUFFER_DAYS);
+  const daysUntil = Math.round((dispatch - toDate(todayISO())) / 86400000);
+  let risk = 'ok';
+  if(daysUntil < 0) risk = 'late';
+  else if(daysUntil <= 3) risk = 'soon';
+  return {dispatchDate: toISO(dispatch), travelDays, risk, daysUntil};
+}
+
+function render(){ renderDatalist(); renderItems(); renderProjects(); renderForecast(); renderTeam(); }
+
+function renderTeam(){
+  const wrap = document.getElementById('team-list');
+  wrap.innerHTML = team.length
+    ? team.map(t => `<div class="alloc-line"><span>${escapeHtml(t.name || t.email)}<span class="need-qty">${escapeHtml(t.email)}</span></span><button class="btn secondary small" onclick="removeTeamMember('${t.id}')">Remove</button></div>`).join('')
+    : '<p class="empty" style="padding:6px 0;">No team members added yet.</p>';
+}
+
+function addTeamMember(){
+  const nameInput = document.getElementById('team-name');
+  const emailInput = document.getElementById('team-email');
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ alert('Enter a valid email address.'); return; }
+  team.push({id: uid(), name, email});
+  nameInput.value = ''; emailInput.value = '';
+  renderTeam(); saveData();
+}
+
+function removeTeamMember(id){
+  team = team.filter(t => t.id !== id);
+  renderTeam(); saveData();
+}
+
+function notifyTeam(){
+  if(team.length === 0){ alert('Add at least one team email above first.'); return; }
+  const conflicts = computeConflicts();
+  if(conflicts.length === 0){ alert('No shortages detected right now.'); return; }
+  const to = team.map(t => t.email).join(',');
+  const subject = encodeURIComponent('Inventory shortage alert — Borse Techos');
+  const bodyLines = conflicts.map(c => c.itemName + ': short by ' + c.over + ' from ' + fmtDate(c.start) + ' to ' + fmtDate(c.end) + ' (overlapping: ' + c.projects.join(', ') + ')');
+  const body = encodeURIComponent('Inventory shortages detected:\n\n' + bodyLines.join('\n') + '\n\nOpen the app\'s Forecast tab for full details.');
+  window.location.href = 'mailto:' + to + '?subject=' + subject + '&body=' + body;
+}
+
+function renderDatalist(){
+  document.getElementById('item-names-list').innerHTML = items.map(i => `<option value="${escapeHtml(i.name)}">`).join('');
+}
+
+function upcomingOutDates(itemId){
+  const today = todayISO();
+  const upcoming = [];
+  for(const p of projects){
+    if(p.status !== 'active' || !p.startDate || !p.endDate) continue;
+    const a = p.allocations.find(x => x.itemId === itemId);
+    if(!a || a.qty <= 0) continue;
+    if(p.startDate <= today && today <= p.endDate) continue;
+    if(p.startDate < today) continue;
+    upcoming.push({date: p.startDate, name: p.name, qty: a.qty});
+  }
+  upcoming.sort((a,b) => a.date.localeCompare(b.date));
+  return upcoming;
+}
+
+function renderItems(){
+  renderGlobalItems();
+  renderWarehouseItems('Monterrey', 'items-list-mty');
+  renderWarehouseItems('CDMX', 'items-list-cdmx');
+  renderEventItems();
+}
+
+function currentOutDetails(itemId){
+  const today = todayISO();
+  const out = [];
+  for(const p of projects){
+    if(p.status !== 'active' || !p.startDate || !p.endDate) continue;
+    if(!(p.startDate <= today && today <= p.endDate)) continue;
+    const a = p.allocations.find(x => x.itemId === itemId);
+    if(a && a.qty > 0) out.push({name: p.name, location: p.location, qty: a.qty, endDate: p.endDate});
+  }
+  out.sort((a,b) => a.endDate.localeCompare(b.endDate));
+  return out;
+}
+
+function renderEventItems(){
+  const wrap = document.getElementById('items-list-event');
+  const outItems = items.map(item => ({item, out: currentOutDetails(item.id)})).filter(x => x.out.length);
+  if(outItems.length === 0){ wrap.innerHTML = '<p class="empty">Nothing out right now.</p>'; return; }
+  wrap.innerHTML = outItems.map(({item, out}) => {
+    const totalOut = out.reduce((s,o) => s + o.qty, 0);
+    const lines = out.map(o => `<div class="alloc-line"><span>${escapeHtml(o.name)}${o.location ? ' <span class="need-qty">'+escapeHtml(o.location)+'</span>' : ''}</span><span class="mono">${o.qty} — back by ${fmtDate(o.endDate)}</span></div>`).join('');
+    return `
+      <div class="item-row">
+        <div class="item-top">
+          <div><span class="item-name">${escapeHtml(item.name)}</span><span class="item-cat">${escapeHtml(item.category||'—')}</span></div>
+          <span class="item-nums mono"><b>${totalOut}</b> ${escapeHtml(item.unit||'')} out</span>
+        </div>
+        <div style="margin-top:6px;">${lines}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderGlobalItems(){
+  const wrap = document.getElementById('items-list-global');
+  if(items.length === 0){ wrap.innerHTML = '<p class="empty">No items yet — add your first one above.</p>'; return; }
+  wrap.innerHTML = items.map(item => {
+    const recorded = globalRecorded(item);
+    const alloc = allocatedToday(item);
+    const avail = availableToday(item);
+    const low = avail <= 0 && itemTotal(item) > 0;
+    const s = item.stock || {};
+    const mty = s['Monterrey'] || 0;
+    const cdmx = s['CDMX'] || 0;
+    const accounted = mty + cdmx + alloc;
+    const scaleBase = Math.max(recorded, accounted, 1);
+    const mtyPct = (mty/scaleBase*100);
+    const cdmxPct = (cdmx/scaleBase*100);
+    const outPct = (alloc/scaleBase*100);
+    const diff = recorded - accounted;
+    let reconcileHtml = '';
+    if(recorded > 0){
+      if(diff === 0) reconcileHtml = '<span class="recon-ok">Matches recorded total</span>';
+      else if(diff > 0) reconcileHtml = `<span class="recon-bad">Unaccounted: ${diff}</span>`;
+      else reconcileHtml = `<span class="recon-bad">Over-accounted by ${-diff}</span>`;
+    }
+    const upcoming = upcomingOutDates(item.id);
+    let nextOutHtml = '';
+    if(upcoming.length){
+      const next = upcoming[0];
+      nextOutHtml = `<div class="next-out">Next out: <b>${fmtDate(next.date)}</b> — ${escapeHtml(next.name)} (${next.qty})${upcoming.length>1 ? ' <span class="more-out">+'+(upcoming.length-1)+' more</span>' : ''}</div>`;
+    }
+    return `
+      <div class="item-row">
+        <div class="item-top">
+          <div><span class="item-name">${escapeHtml(item.name)}</span><span class="item-cat">${escapeHtml(item.category||'—')}</span></div>
+          <button class="btn danger small" onclick="removeItem('${item.id}')">Remove</button>
+        </div>
+        <div class="item-nums mono">
+          <span>Global (recorded) <b>${recorded}</b> ${escapeHtml(item.unit||'')}</span>
+          <span>Free today <b style="color:${low?'var(--red)':'var(--green)'}">${avail}</b></span>
+          ${reconcileHtml}
+        </div>
+        <div class="stockbar three-way" style="margin-top:8px;"><div class="seg-mty" style="width:${mtyPct}%"></div><div class="seg-cdmx" style="width:${cdmxPct}%"></div><div class="seg-out" style="width:${outPct}%"></div></div>
+        <div class="item-nums mono" style="margin-top:6px; color:var(--muted-2);"><span><span class="dot-mty"></span>Monterrey <b>${mty}</b></span><span><span class="dot-cdmx"></span>CDMX <b>${cdmx}</b></span><span><span class="dot-out"></span>Out today <b>${alloc}</b></span></div>
+        ${low ? '<div class="low-flag">Nothing free right now</div>' : ''}
+        ${nextOutHtml}
+      </div>`;
+  }).join('');
+}
+
+function renderWarehouseItems(warehouse, elId){
+  const wrap = document.getElementById(elId);
+  if(items.length === 0){ wrap.innerHTML = '<p class="empty">No items yet.</p>'; return; }
+  wrap.innerHTML = items.map(item => {
+    const qty = (item.stock && item.stock[warehouse]) || 0;
+    return `
+      <div class="item-row">
+        <div class="item-top">
+          <div><span class="item-name">${escapeHtml(item.name)}</span><span class="item-cat">${escapeHtml(item.category||'—')}</span></div>
+          <div class="field" style="width:100px;">
+            <input type="number" min="0" step="1" value="${qty}" onchange="updateWarehouseQty('${item.id}','${warehouse}', this.value)">
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateWarehouseQty(itemId, warehouse, value){
+  const qty = parseInt(value, 10);
+  if(isNaN(qty) || qty < 0) return;
+  const item = items.find(it => it.id === itemId);
+  if(!item) return;
+  item.stock = item.stock || {};
+  item.stock[warehouse] = qty;
+  render(); saveData();
+}
+
+function renderProjects(){
+  const active = projects.filter(p => p.status === 'active');
+  const done = projects.filter(p => p.status === 'completed');
+  document.getElementById('projects-active').innerHTML = active.length ? active.map(projectCard).join('') : '<p class="empty">No active projects.</p>';
+  document.getElementById('projects-done').innerHTML = done.length ? done.map(projectCard).join('') : '<p class="empty">None yet.</p>';
+}
+
+function projectCard(p){
+  const isOpen = openProjectIds.has(p.id);
+  const hasDates = !!(p.startDate && p.endDate);
+  const truck = p.status==='active' ? truckingInfo(p) : null;
+  const atRisk = truck && truck.risk === 'late';
+
+  const needs = p.needs || [];
+  const needIds = new Set(needs.map(n => n.itemId).filter(Boolean));
+  const extraAllocs = p.allocations.filter(a => !needIds.has(a.itemId));
+
+  const needLines = needs.length
+    ? needs.map(n => {
+        const item = n.itemId ? items.find(it => it.id === n.itemId) : null;
+        const pulled = item ? ((p.allocations.find(a => a.itemId === n.itemId) || {}).qty || 0) : 0;
+        let tag, actionBtn = '';
+        if(!item){
+          tag = `<span class="status-tag status-missing">Not in inventory</span>`;
+        } else if(pulled >= n.qty){
+          tag = `<span class="status-tag status-covered">Pulled ${pulled}/${n.qty}</span>`;
+        } else {
+          const check = hasDates ? wouldConflict(item, p, n.qty) : {maxDemand:0};
+          if(hasDates && check.maxDemand > itemTotal(item)){
+            tag = `<span class="status-tag status-short">Short by ${check.maxDemand-itemTotal(item)} on ${fmtDate(check.worstDate)}</span>`;
+          } else if(!hasDates){
+            tag = `<span class="status-tag status-ready">Set dates to pull</span>`;
+          } else {
+            tag = `<span class="status-tag status-ready">${pulled>0 ? 'Partial '+pulled+'/'+n.qty : 'Ready'}</span>`;
+          }
+          if(p.status==='active' && hasDates) actionBtn = `<button class="btn small" onclick="pullNeed('${p.id}','${n.id}')">Pull</button>`;
+        }
+        return `<div class="alloc-line">
+          <span><span class="need-name">${escapeHtml(n.name)}</span><span class="need-qty">need ${n.qty}</span></span>
+          <span style="display:flex; align-items:center; gap:8px;">${tag} ${actionBtn} ${p.status==='active' ? `<button class="btn secondary small" onclick="removeNeed('${p.id}','${n.id}')">Remove</button>` : ''}</span>
+        </div>`;
+      }).join('')
+    : '<p class="empty" style="padding:10px 0;">No items listed yet — add what this show needs below.</p>';
+
+  const extraLines = extraAllocs.length
+    ? extraAllocs.map(a => {
+        const item = items.find(it => it.id === a.itemId);
+        const name = item ? item.name : '(removed item)';
+        const unit = item ? (item.unit||'') : '';
+        return `<div class="alloc-line"><span>${escapeHtml(name)}</span><span class="mono" style="display:flex; align-items:center; gap:10px;"><b>${a.qty}</b> ${escapeHtml(unit)} ${p.status==='active' ? `<button class="btn secondary small" onclick="returnAllocation('${p.id}','${a.itemId}')">Return</button>` : ''}</span></div>`;
+      }).join('')
+    : '';
+
+  let truckHtml = '';
+  if(p.status==='active' && p.distanceKm && hasDates){
+    if(truck.risk==='late') truckHtml = `<div class="truck-info truck-late">Truck should have left ${fmtDate(truck.dispatchDate)} — dispatch is overdue.</div>`;
+    else if(truck.risk==='soon') truckHtml = `<div class="truck-info truck-soon">Ship by ${fmtDate(truck.dispatchDate)} — ${truck.daysUntil} day${truck.daysUntil===1?'':'s'} away (${truck.travelDays}d on the road).</div>`;
+    else truckHtml = `<div class="truck-info truck-ok">Ship by ${fmtDate(truck.dispatchDate)} (${truck.travelDays}d on the road, plenty of runway).</div>`;
+  }
+
+  return `
+    <div class="proj-card ${atRisk?'at-risk':''}">
+      <div class="proj-head" onclick="toggleProject('${p.id}')">
+        <div>
+          <div class="proj-name">${escapeHtml(p.name)}</div>
+          <div class="proj-meta">${escapeHtml(p.location||'No location set')} · ${hasDates ? fmtDate(p.startDate)+' — '+fmtDate(p.endDate) : 'No dates set'}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          ${atRisk ? '<span class="status-pill status-risk">At risk</span>' : ''}
+          <span class="status-pill ${p.status==='active'?'status-active':'status-done'}">${p.status}</span>
+        </div>
+      </div>
+      <div class="proj-body ${isOpen?'open':''}">
+        <div class="details-grid">
+          <div class="field"><label>Location</label><input id="loc-${p.id}" value="${escapeHtml(p.location||'')}" placeholder="City"></div>
+          <div class="field"><label>Distance from Monterrey (km)</label><input id="dist-${p.id}" type="number" min="0" value="${p.distanceKm||''}" placeholder="optional"></div>
+          <div class="field"><label>Load-in</label><input id="start-${p.id}" type="date" value="${p.startDate||''}"></div>
+          <div class="field"><label>Load-out</label><input id="end-${p.id}" type="date" value="${p.endDate||''}"></div>
+        </div>
+        <button class="btn secondary small" onclick="saveProjectDetails('${p.id}')">Save details</button>
+        ${truckHtml}
+        <p class="sub-label">Materials needed</p>
+        <div>${needLines}</div>
+        ${p.status==='active' ? `
+        <div class="add-alloc">
+          <div class="field" style="flex:1;"><label>Item</label><input list="item-names-list" id="need-name-${p.id}" placeholder="Type or pick from inventory"></div>
+          <div class="field" style="width:80px;"><label>Qty needed</label><input id="need-qty-${p.id}" type="number" min="1" step="1" placeholder="1"></div>
+          <button class="btn small" onclick="addNeed('${p.id}')">Add to list</button>
+        </div>
+        <p class="hint">Type a name that matches something in Inventory to check it against stock — otherwise it's saved as a placeholder until it's added to Inventory.</p>
+        <div class="add-alloc" style="border-top:none; margin-top:6px; padding-top:0;">
+          <div class="field" style="flex:1;">
+            <label>Or upload a list (.xlsx / .csv)</label>
+            <input type="file" id="excel-${p.id}" accept=".xlsx,.xls,.csv" onchange="handleExcelUpload('${p.id}', this)">
+          </div>
+        </div>
+        <p class="hint">Needs a name column and a quantity column. Headers like "Item"/"Qty" or "Artículo"/"Cantidad" are picked up automatically; otherwise it uses the first two columns.</p>
+        ${!hasDates ? '<p class="hint">Set load-in and load-out dates above to get accurate short/ready status and to pull stock — you can still build the list without them.</p>' : ''}
+        ` : ''}
+        ${extraLines ? `<p class="sub-label">Also pulled (not on the list above)</p><div>${extraLines}</div>` : ''}
+        ${p.status==='active'
+          ? `<div style="margin-top:14px; display:flex; gap:8px;"><button class="btn secondary small" onclick="completeProject('${p.id}')">Mark complete & return all stock</button><button class="btn danger small" onclick="deleteProject('${p.id}')">Delete project</button></div>`
+          : `<div style="margin-top:14px; display:flex; gap:8px;"><button class="btn secondary small" onclick="reopenProject('${p.id}')">Reopen project</button><button class="btn danger small" onclick="deleteProject('${p.id}')">Delete project</button></div>`}
+      </div>
+    </div>`;
+}
+
+function renderForecast(){
+  const conflicts = computeConflicts();
+  const badge = document.getElementById('conflict-badge');
+  if(conflicts.length){ badge.style.display='inline-block'; badge.textContent = conflicts.length; }
+  else badge.style.display = 'none';
+
+  document.getElementById('conflicts-list').innerHTML = conflicts.length
+    ? '<button class="btn small" style="margin-bottom:10px;" onclick="notifyTeam()">Notify team about these shortages</button>' + conflicts.map(c => `
+        <div class="conflict-row">
+          <b>${escapeHtml(c.itemName)}</b> is short by <b>${c.over}</b> unit${c.over===1?'':'s'} from ${fmtDate(c.start)} to ${fmtDate(c.end)}.
+          <div class="proj-tags">Overlapping: ${c.projects.map(escapeHtml).join(', ')}</div>
+        </div>`).join('')
+    : '<p class="empty">No conflicts detected.</p>';
+
+  const active = projects.filter(p => p.status==='active' && p.startDate && p.endDate)
+    .sort((a,b)=> a.startDate.localeCompare(b.startDate));
+  if(active.length === 0){
+    document.getElementById('forecast-list').innerHTML = '<p class="empty">Assign items with dates to see them here.</p>';
+    return;
+  }
+  document.getElementById('forecast-list').innerHTML = active.map(p => {
+    if(p.allocations.length===0) return '';
+    const lines = p.allocations.map(a=>{
+      const it = items.find(i=>i.id===a.itemId);
+      return `${a.qty} ${escapeHtml(it?it.unit:'')} ${escapeHtml(it?it.name:'(removed)')}`;
+    }).join(', ');
+    return `<div class="item-row"><div class="item-top"><span class="item-name">${escapeHtml(p.name)}</span><span class="item-cat">${fmtDate(p.startDate)} – ${fmtDate(p.endDate)}</span></div><div class="item-nums">${lines}</div></div>`;
+  }).join('');
+}
+
+function toggleProject(id){ if(openProjectIds.has(id)) openProjectIds.delete(id); else openProjectIds.add(id); renderProjects(); }
+
+document.getElementById('btn-add-item').addEventListener('click', () => {
+  const name = document.getElementById('in-name').value.trim();
+  const cat = document.getElementById('in-cat').value.trim();
+  const mtyQty = parseInt(document.getElementById('in-qty-mty').value, 10) || 0;
+  const cdmxQty = parseInt(document.getElementById('in-qty-cdmx').value, 10) || 0;
+  const globalQty = parseInt(document.getElementById('in-qty-global').value, 10) || 0;
+  const unit = document.getElementById('in-unit').value.trim() || 'pcs';
+  if(!name || mtyQty < 0 || cdmxQty < 0 || globalQty < 0) return;
+  items.push({id: uid(), name, category: cat, unit, stock: {Monterrey: mtyQty, CDMX: cdmxQty}, globalTotal: globalQty});
+  document.getElementById('in-name').value=''; document.getElementById('in-cat').value='';
+  document.getElementById('in-qty-mty').value=''; document.getElementById('in-qty-cdmx').value=''; document.getElementById('in-qty-global').value=''; document.getElementById('in-unit').value='';
+  render(); saveData();
+});
+
+function removeItem(id){
+  items = items.filter(it => it.id !== id);
+  for(const p of projects) p.allocations = p.allocations.filter(a => a.itemId !== id);
+  render(); saveData();
+}
+
+function handleInventoryUpload(fileInput){
+  const file = fileInput.files[0];
+  if(!file) return;
+  const warehouse = document.getElementById('inv-warehouse').value;
+  const isCsv = /\.csv$/i.test(file.name);
+  const reader = new FileReader();
+  reader.onerror = () => { alert('Could not read that file.'); fileInput.value = ''; };
+  const finish = (rows) => processInventoryRows(rows, fileInput, warehouse);
+
+  if(isCsv){
+    reader.onload = (e) => {
+      try{ finish(parseCsv(e.target.result)); }
+      catch(err){ alert('Could not read that CSV file.'); fileInput.value = ''; }
+    };
+    reader.readAsText(file);
+    return;
+  }
+  if(typeof XLSX === 'undefined'){
+    alert("Excel support needs an internet connection to load the first time it's used. Connect and try again, or save the file as .csv and upload that instead — CSV works fully offline.");
+    fileInput.value = '';
+    return;
+  }
+  reader.onload = (e) => {
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      finish(XLSX.utils.sheet_to_json(sheet, {defval:''}));
+    }catch(err){
+      alert("Could not read that file. Make sure it's a valid .xlsx or .xls.");
+      fileInput.value = '';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function processInventoryRows(rows, fileInput, warehouse){
+  fileInput.value = '';
+  if(!rows.length){ alert('That file looks empty.'); return; }
+  const keys = Object.keys(rows[0]);
+  const nameKey = keys.find(k => /item|name|material|producto|art[ií]culo|descripci/i.test(k)) || keys[0];
+  const qtyKey = keys.find(k => /qty|quantity|cant|invent|stock|existenc/i.test(k)) || keys[1];
+  if(!nameKey || !qtyKey){ alert('Could not find a name and a quantity column in that file.'); return; }
+  let added = 0, updated = 0;
+  for(const row of rows){
+    const name = String(row[nameKey]).trim();
+    const qty = parseInt(row[qtyKey], 10);
+    if(!name || isNaN(qty) || qty < 0) continue;
+    const existing = items.find(it => it.name.toLowerCase() === name.toLowerCase());
+    if(warehouse === 'Global'){
+      if(existing){ existing.globalTotal = qty; updated++; }
+      else {
+        const stock = {}; WAREHOUSES.forEach(w => stock[w] = 0);
+        items.push({id: uid(), name, category: '', unit: 'pcs', stock, globalTotal: qty});
+        added++;
+      }
+      continue;
+    }
+    if(existing){
+      existing.stock = existing.stock || {};
+      existing.stock[warehouse] = qty;
+      updated++;
+    } else {
+      const stock = {}; WAREHOUSES.forEach(w => stock[w] = 0); stock[warehouse] = qty;
+      items.push({id: uid(), name, category: '', unit: 'pcs', stock, globalTotal: 0});
+      added++;
+    }
+  }
+  render(); saveData();
+  alert(warehouse + ' inventory updated — ' + added + ' new item' + (added===1?'':'s') + ', ' + updated + ' updated.');
+}
+
+document.getElementById('btn-add-project').addEventListener('click', () => {
+  const name = document.getElementById('proj-name').value.trim();
+  const location = document.getElementById('proj-location').value.trim();
+  const startDate = document.getElementById('proj-start').value;
+  const endDate = document.getElementById('proj-end').value;
+  const distanceKm = parseFloat(document.getElementById('proj-distance').value) || null;
+  if(!name) return;
+  if(startDate && endDate && endDate < startDate){ alert('Load-out date is before load-in date.'); return; }
+  const p = {id: uid(), name, location, startDate: startDate||null, endDate: endDate||null, distanceKm, status:'active', createdAt: Date.now(), allocations: [], needs: []};
+  projects.unshift(p);
+  openProjectIds.add(p.id);
+  ['proj-name','proj-location','proj-start','proj-end','proj-distance'].forEach(id => document.getElementById(id).value = '');
+  render(); saveData();
+});
+
+function saveProjectDetails(projectId){
+  const proj = projects.find(p => p.id === projectId);
+  const location = document.getElementById('loc-'+projectId).value.trim();
+  const distanceKm = parseFloat(document.getElementById('dist-'+projectId).value) || null;
+  const startDate = document.getElementById('start-'+projectId).value || null;
+  const endDate = document.getElementById('end-'+projectId).value || null;
+  if(startDate && endDate && endDate < startDate){ alert('Load-out date is before load-in date.'); return; }
+  proj.location = location; proj.distanceKm = distanceKm; proj.startDate = startDate; proj.endDate = endDate;
+  render(); saveData();
+}
+
+function addNeed(projectId){
+  const nameInput = document.getElementById('need-name-'+projectId);
+  const qtyInput = document.getElementById('need-qty-'+projectId);
+  const name = nameInput.value.trim();
+  const qty = parseInt(qtyInput.value, 10);
+  if(!name || isNaN(qty) || qty <= 0) return;
+  const proj = projects.find(p => p.id === projectId);
+  const match = items.find(it => it.name.toLowerCase() === name.toLowerCase());
+  proj.needs = proj.needs || [];
+  proj.needs.push({id: uid(), name: match ? match.name : name, itemId: match ? match.id : null, qty});
+  nameInput.value = ''; qtyInput.value = '';
+  render(); saveData();
+}
+
+function removeNeed(projectId, needId){
+  const proj = projects.find(p => p.id === projectId);
+  proj.needs = (proj.needs || []).filter(n => n.id !== needId);
+  render(); saveData();
+}
+
+function handleExcelUpload(projectId, fileInput){
+  const file = fileInput.files[0];
+  if(!file) return;
+  const isCsv = /\.csv$/i.test(file.name);
+  const reader = new FileReader();
+  reader.onerror = () => { alert('Could not read that file.'); fileInput.value = ''; };
+
+  if(isCsv){
+    reader.onload = (e) => {
+      try{ processRows(projectId, parseCsv(e.target.result), fileInput); }
+      catch(err){ alert('Could not read that CSV file.'); fileInput.value = ''; }
+    };
+    reader.readAsText(file);
+    return;
+  }
+
+  if(typeof XLSX === 'undefined'){
+    alert("Excel support needs an internet connection to load the first time it's used. Either connect to the internet and try again, or save the file as .csv (File > Save As > CSV in Excel) and upload that instead \u2014 CSV works fully offline.");
+    fileInput.value = '';
+    return;
+  }
+  reader.onload = (e) => {
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      processRows(projectId, XLSX.utils.sheet_to_json(sheet, {defval:''}), fileInput);
+    }catch(err){
+      alert("Could not read that file. Make sure it's a valid .xlsx or .xls.");
+      fileInput.value = '';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseCsv(text){
+  const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim().length);
+  if(!lines.length) return [];
+  const splitLine = (line) => {
+    const result = []; let cur = '', inQuotes = false;
+    for(let i=0;i<line.length;i++){
+      const c = line[i];
+      if(c === '"'){ inQuotes = !inQuotes; }
+      else if(c === ',' && !inQuotes){ result.push(cur.trim()); cur=''; }
+      else cur += c;
+    }
+    result.push(cur.trim());
+    return result;
+  };
+  const headers = splitLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const cells = splitLine(line);
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = cells[i] !== undefined ? cells[i] : '');
+    return obj;
+  });
+}
+
+function processRows(projectId, rows, fileInput){
+  fileInput.value = '';
+  if(!rows.length){ alert('That file looks empty.'); return; }
+  const keys = Object.keys(rows[0]);
+  const nameKey = keys.find(k => /item|name|material|producto|art[i\u00ed]culo/i.test(k)) || keys[0];
+  const qtyKey = keys.find(k => /qty|quantity|cant/i.test(k)) || keys[1];
+  if(!nameKey || !qtyKey){ alert('Could not find a name and a quantity column in that file.'); return; }
+  const proj = projects.find(p => p.id === projectId);
+  proj.needs = proj.needs || [];
+  let added = 0;
+  for(const row of rows){
+    const name = String(row[nameKey]).trim();
+    const qty = parseInt(row[qtyKey], 10);
+    if(!name || isNaN(qty) || qty <= 0) continue;
+    const match = items.find(it => it.name.toLowerCase() === name.toLowerCase());
+    proj.needs.push({id: uid(), name: match ? match.name : name, itemId: match ? match.id : null, qty});
+    added++;
+  }
+  render(); saveData();
+  alert(added ? (added + ' item' + (added===1?'':'s') + ' added from the file.') : 'No valid rows found \u2014 check the name and quantity columns.');
+}
+
+function pullNeed(projectId, needId){
+  const proj = projects.find(p => p.id === projectId);
+  const need = (proj.needs || []).find(n => n.id === needId);
+  if(!need || !need.itemId) return;
+  const item = items.find(it => it.id === need.itemId);
+  const check = wouldConflict(item, proj, need.qty);
+  if(check.maxDemand > itemTotal(item)){
+    const overBy = check.maxDemand - itemTotal(item);
+    const withWhom = check.worstProjects.length ? ' together with ' + check.worstProjects.join(', ') : '';
+    alert('Pulling the full ' + need.qty + ' would leave "' + item.name + '" short by ' + overBy + ' on ' + fmtDate(check.worstDate) + withWhom + '.');
+    return;
+  }
+  const existing = proj.allocations.find(a => a.itemId === need.itemId);
+  if(existing) existing.qty = need.qty; else proj.allocations.push({itemId: need.itemId, qty: need.qty});
+  render(); saveData();
+}
+
+function returnAllocation(projectId, itemId){
+  const proj = projects.find(p => p.id === projectId);
+  proj.allocations = proj.allocations.filter(a => a.itemId !== itemId);
+  render(); saveData();
+}
+
+function completeProject(projectId){
+  const proj = projects.find(p => p.id === projectId);
+  proj.status = 'completed'; proj.allocations = [];
+  render(); saveData();
+}
+
+function reopenProject(projectId){
+  const proj = projects.find(p => p.id === projectId);
+  proj.status = 'active'; openProjectIds.add(projectId);
+  render(); saveData();
+}
+
+function deleteProject(projectId){
+  const proj = projects.find(p => p.id === projectId);
+  if(!proj) return;
+  if(!confirm('Delete "' + proj.name + '" permanently? This returns any stock it has pulled and cannot be undone.')) return;
+  projects = projects.filter(p => p.id !== projectId);
+  openProjectIds.delete(projectId);
+  render(); saveData();
+}
+
+document.querySelectorAll('.tabs > .tab-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs > .tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.inv-subtab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.inv-subtab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.inv-subpanel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+    btn.classList.add('active');
+    const panel = document.getElementById('items-list-'+btn.dataset.subtab);
+    panel.classList.add('active');
+    panel.style.display = 'block';
+  });
+});
+
+const APP_PASSWORD = 'Borse2026';
+function tryUnlock(){
+  const val = document.getElementById('lock-password').value;
+  if(val === APP_PASSWORD){
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('lock-error').textContent = 'Incorrect password.';
+    document.getElementById('lock-password').value = '';
+    document.getElementById('lock-password').focus();
+  }
+}
+document.getElementById('lock-btn').addEventListener('click', tryUnlock);
+document.getElementById('lock-password').addEventListener('keydown', e => { if(e.key==='Enter') tryUnlock(); });
+</script>
+</body>
+</html>
